@@ -1,0 +1,61 @@
+# Application 'eemfelton', environment 'dev'.
+dev:
+  root: /var/www/html/eemfelton.dev/docroot
+  ac-site: eemfelton
+  ac-env: dev
+  ac-realm: prod
+  uri: eemfeltondev.prod.acquia-sites.com
+  dev.livedev:
+    parent: '@eemfelton.dev'
+    root: /mnt/gfs/eemfelton.dev/livedev/docroot
+  host: eemfeltondev.ssh.prod.acquia-sites.com
+  user: eemfelton.dev
+  paths:
+    drush-script: drush9
+
+
+# Application 'eemfelton', environment 'next'.
+next:
+  root: /var/www/html/docroot
+  ac-site: eemfelton
+  ac-env: next
+  ac-realm: prod
+  uri: eemfeltonnext.prod.acquia-sites.com
+  host: eemfeltonnext.ssh.prod.acquia-sites.com
+  user: eemfelton.next
+  paths:
+    drush-script: drush9
+
+
+# Application 'eemfelton', environment 'prod'.
+prod:
+  root: /var/www/html/eemfelton.prod/docroot
+  ac-site: eemfelton
+  ac-env: prod
+  ac-realm: prod
+  uri: eemfelton.prod.acquia-sites.com
+  prod.livedev:
+    parent: '@eemfelton.prod'
+    root: /mnt/gfs/eemfelton.prod/livedev/docroot
+  host: eemfelton.ssh.prod.acquia-sites.com
+  user: eemfelton.prod
+  paths:
+    drush-script: drush9
+
+
+# Application 'eemfelton', environment 'test'.
+test:
+  root: /var/www/html/eemfelton.test/docroot
+  ac-site: eemfelton
+  ac-env: test
+  ac-realm: prod
+  uri: eemfeltonstg.prod.acquia-sites.com
+  test.livedev:
+    parent: '@eemfelton.test'
+    root: /mnt/gfs/eemfelton.test/livedev/docroot
+  host: eemfeltonstg.ssh.prod.acquia-sites.com
+  user: eemfelton.test
+  paths:
+    drush-script: drush9
+
+
