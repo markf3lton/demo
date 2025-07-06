@@ -1,0 +1,128 @@
+services:
+  php:
+    # Drupal 10 requires PHP 8.1+, using 8.2 for better performance
+    image: tugboatqa/php:8.2-apache
+    default: true
+    depends: mysql
+    commands:
+      init:
+        # Install Composer
+        - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+        # Install Drush (compatible with Drupal 10)
+        - composer global require drush/drush:^12.0
+        - ln -sf ~/.composer/vendor/bin/drush /usr/local/bin/drush
+
+        # Install additional tools that might be useful
+        - apt-get update && apt-get install -y git unzip
+
+      update:
+        # Install/update Composer dependencies
+        - composer install --no-dev --optimize-autoloader
+
+        # Ensure proper file permissions
+        - chown -R www-data:www-data /var/www/html
+
+        # Create Drupal settings for Tugboat
+        - |
+          cat >> web/sites/default/settings.php << 'EOF'
+          
+          // Tugboat-specific settings for Drupal 10
+          if (isset($_SERVER['TUGBOAT_PREVIEW_ID'])) {
+            // Database configuration
+            $databases['default']['default'] = [
+              'database' => 'tugboat',
+              'username' => 'tugboat',
+              'password' => 'tugboat',
+              'host' => 'mysql',
+              'port' => '3306',
+              'driver' => 'mysql',
+              'prefix' => '',
+              'collation' => 'utf8mb4_general_ci',
+            ];
+            
+            // Trusted host patterns
+            $settings['trusted_host_patterns'] = [
+              '^.+\.tugboat\.qa$',
+              '^.+\.tugboatqa\.com$',
+            ];
+            
+            // Configuration sync directory
+            $settings['config_sync_directory'] = '../config/sync';
+            
+            // Hash salt for security
+            $settings['hash_salt'] = 'tugboat-preview-' . $_SERVER['TUGBOAT_PREVIEW_ID'];
+            
+            // File system settings
+            $settings['file_private_path'] = '/tmp/private';
+            $settings['file_temp_path'] = '/tmp';
+            
+            // Disable CSS/JS aggregation for easier debugging
+            $config['system.performance']['css']['preprocess'] = FALSE;
+            $config['system.performance']['js']['preprocess'] = FALSE;
+            
+            // Skip file system requirements check
+            $settings['skip_permissions_hardening'] = TRUE;
+            
+            // Disable update notifications in previews
+            $settings['update_free_access'] = FALSE;
+          }
+          EOF
+
+        # Create private files directory
+        - mkdir -p /tmp/private && chown www-data:www-data /tmp/private
+
+      build:
+        # Install Drupal 10 with standard profile
+        - drush site:install standard --yes --account-name=admin --account-pass=admin --site-name="Tugboat Preview"
+
+        # Import configuration if it exists
+        - drush config:import --yes || echo "No config to import, continuing..."
+
+        # Enable common Drupal 10 modules (adjust as needed)
+        - drush pm:enable admin_toolbar admin_toolbar_tools || true
+
+        # Clear all caches
+        - drush cache:rebuild
+
+        # Set proper permissions
+        - chown -R www-data:www-data web/sites/default/files
+
+  mysql:
+    # Use MySQL 8.0 which is fully compatible with Drupal 10
+    image: tugboatqa/mysql:8.0
+    commands:
+      init:
+        # Configure MySQL for Drupal 10
+        - |
+          cat >> /etc/mysql/conf.d/tugboat.cnf << 'EOF'
+          [mysqld]
+          max_allowed_packet = 64M
+          innodb_file_format = Barracuda
+          innodb_file_per_table = 1
+          innodb_large_prefix = 1
+          character-set-server = utf8mb4
+          collation-server = utf8mb4_general_ci
+          EOF
+
+      update:
+        # Create database with proper charset for Drupal 10
+        - mysql -e "CREATE DATABASE IF NOT EXISTS tugboat CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"
+        
+        # Import database dump if you have one (optional)
+        # - mysql tugboat < database.sql
+
+  # Optional: Add Redis for caching (recommended for Drupal 10)
+  redis:
+    image: tugboatqa/redis:6
+    commands:
+      update:
+        # Redis is ready to use, no additional setup needed
+        - echo "Redis is available for caching"
+
+  # Optional: Add Solr for search (if using Search API Solr)
+  # solr:
+  #   image: tugboatqa/solr:8
+  #   commands:
+  #     update:
+  #       - solr-precreate drupal /opt/solr/server/solr/configsets/sample_techproducts_configs
