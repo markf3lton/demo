@@ -25,7 +25,6 @@ class ComposerStaticInit44033c99252b62cff2d1cf9c5baebcc8
         '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
         'def43f6c87e4f8dfd0c9e1b1bab14fe8' => __DIR__ . '/..' . '/symfony/polyfill-iconv/bootstrap.php',
         '2f69d3914119f042cca9e44442d5ce95' => __DIR__ . '/../..' . '/web/core/includes/bootstrap.inc',
-        '47e1160838b5e5a10346ac4084b58c23' => __DIR__ . '/..' . '/laravel/prompts/src/helpers.php',
         '801c31d8ed748cfa537fa45402288c95' => __DIR__ . '/..' . '/psy/psysh/src/functions.php',
     );
 
@@ -97,7 +96,6 @@ class ComposerStaticInit44033c99252b62cff2d1cf9c5baebcc8
         'L' => 
         array (
             'League\\Container\\' => 17,
-            'Laravel\\Prompts\\' => 16,
         ),
         'G' => 
         array (
@@ -118,6 +116,7 @@ class ComposerStaticInit44033c99252b62cff2d1cf9c5baebcc8
             'Drupal\\Composer\\Plugin\\Scaffold\\' => 32,
             'Drupal\\Composer\\Plugin\\ProjectMessage\\' => 38,
             'Drupal\\Component\\' => 17,
+            'DrupalFinder\\' => 13,
             'DrupalCodeGenerator\\' => 20,
             'Doctrine\\Deprecations\\' => 22,
             'Doctrine\\Common\\Lexer\\' => 22,
@@ -332,10 +331,6 @@ class ComposerStaticInit44033c99252b62cff2d1cf9c5baebcc8
         array (
             0 => __DIR__ . '/..' . '/league/container/src',
         ),
-        'Laravel\\Prompts\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/laravel/prompts/src',
-        ),
         'GuzzleHttp\\Psr7\\' => 
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/psr7/src',
@@ -379,6 +374,10 @@ class ComposerStaticInit44033c99252b62cff2d1cf9c5baebcc8
         'Drupal\\Component\\' => 
         array (
             0 => __DIR__ . '/../..' . '/web/core/lib/Drupal/Component',
+        ),
+        'DrupalFinder\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/webflo/drupal-finder/src',
         ),
         'DrupalCodeGenerator\\' => 
         array (
