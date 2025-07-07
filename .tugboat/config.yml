@@ -1,58 +1,39 @@
 services:
   php:
-    image: tugboatqa/php:8.3-apache
+    image: tugboatqa/php:8.2-apache
     default: true
     depends: mysql
     commands:
       init:
-        # Install Composer
         - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-        
-        # Set Apache document root to web directory
-        - echo "DocumentRoot /var/www/html/web" >> /etc/apache2/sites-available/000-default.conf
         - a2enmod rewrite
-        - service apache2 restart
 
       update:
-        # Install dependencies
         - composer install --no-dev
-
-        # Set proper permissions for the entire project
         - chown -R www-data:www-data /var/www/html
-        - chmod -R 755 /var/www/html
-
-        # Create settings file
+        
+        # Simple Apache config
+        - sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/web|' /etc/apache2/sites-available/000-default.conf
+        - service apache2 reload
+        
+        # Basic Drupal settings
+        - cp web/sites/default/default.settings.php web/sites/default/settings.php
         - |
           cat >> web/sites/default/settings.php << 'EOF'
-          if (isset($_SERVER['TUGBOAT_PREVIEW_ID'])) {
-            $databases['default']['default'] = [
-              'database' => 'tugboat',
-              'username' => 'tugboat',
-              'password' => 'tugboat',
-              'host' => 'mysql',
-              'port' => '3306',
-              'driver' => 'mysql',
-            ];
-            $settings['trusted_host_patterns'] = ['^.+\.tugboat\.qa$'];
-            $settings['config_sync_directory'] = '../config/sync';
-          }
+          $databases['default']['default'] = [
+            'database' => 'tugboat',
+            'username' => 'tugboat', 
+            'password' => 'tugboat',
+            'host' => 'mysql',
+            'port' => '3306',
+            'driver' => 'mysql',
+          ];
+          $settings['trusted_host_patterns'] = ['^.+\.tugboat\.qa$'];
           EOF
 
-        # Create directories and set permissions
-        - mkdir -p /tmp/private && chown www-data:www-data /tmp/private
-        - mkdir -p web/sites/default/files && chown -R www-data:www-data web/sites/default/files
-
       build:
-        # Install Drupal
-        - ./vendor/bin/drush site:install standard --yes --account-name=admin --account-pass=admin --site-name="Tugboat Preview"
-        
-        # Import config and clear cache
-        - ./vendor/bin/drush config:import --yes || echo "No config to import"
-        - ./vendor/bin/drush cache:rebuild
-        
-        # Final permission fix
+        - ./vendor/bin/drush site:install --yes --account-name=admin --account-pass=admin
         - chown -R www-data:www-data web/sites/default/files
-        - chmod 755 web/sites/default
 
   mysql:
     image: tugboatqa/mysql:8.0
